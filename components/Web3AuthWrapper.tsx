@@ -31,6 +31,17 @@ export default function Web3AuthWrapper({ children }: { children: React.ReactNod
     try {
       // Get config only in browser (client-side) and only for user pages
       const web3AuthContextConfig = getWeb3AuthContextConfig();
+      
+      // Validate that clientId is not a placeholder or empty
+      const clientId = web3AuthContextConfig.web3AuthOptions.clientId;
+      if (!clientId || clientId === 'PLACEHOLDER_CLIENT_ID_FOR_BUILD' || clientId.trim() === '') {
+        throw new Error(
+          'Web3Auth Client ID is not configured. ' +
+          'Please set NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID in Railway Shared Variables and redeploy. ' +
+          'IMPORTANT: Variables must be set BEFORE building.'
+        );
+      }
+      
       setConfig(web3AuthContextConfig);
     } catch (err: any) {
       console.error('Web3Auth configuration error:', err);
