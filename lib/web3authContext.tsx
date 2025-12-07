@@ -2,7 +2,11 @@
  * Web3Auth configuration for MetaMask Embedded Wallets
  * 
  * Based on: https://docs.metamask.io/embedded-wallets/sdk/react/
+ * 
+ * Note: This file is imported by client components only
  */
+
+'use client';
 
 import { type Web3AuthContextConfig } from '@web3auth/modal/react'
 import { WEB3AUTH_NETWORK, type Web3AuthOptions } from '@web3auth/modal'
