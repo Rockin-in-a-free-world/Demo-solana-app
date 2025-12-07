@@ -19,6 +19,9 @@ const nextConfig = {
   },
   // Ensure server-only modules aren't imported in client components
   serverExternalPackages: ['@tetherto/wdk-wallet-solana', 'sodium-native'],
+  // Add empty turbopack config to silence the warning
+  // We're using webpack for native module compatibility
+  turbopack: {},
 }
 
 module.exports = nextConfig
