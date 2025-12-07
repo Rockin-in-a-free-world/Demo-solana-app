@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { RentPaymentRequest } from '@/lib/types';
 
@@ -26,7 +26,7 @@ export default function FeemasterDashboard() {
     payRent: false,
   });
 
-  const handleCheckBalance = async () => {
+  const handleCheckBalance = useCallback(async () => {
     try {
       const response = await fetch('/api/feemaster/balance');
       if (!response.ok) throw new Error('Failed to get balance');
@@ -38,7 +38,7 @@ export default function FeemasterDashboard() {
       console.error('Error checking balance:', error);
       alert('Failed to check balance');
     }
-  };
+  }, []);
 
   const handleViewPrivateKey = async () => {
     try {
@@ -77,7 +77,7 @@ export default function FeemasterDashboard() {
     handleCheckBalance();
     
     setLoading(false);
-  }, [router]);
+  }, [router, handleCheckBalance]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('feemaster_public_key');
