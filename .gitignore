@@ -26,4 +26,6 @@ Thumbs.db
 *.swp
 *.swo
 
+# secrets
+secrets*
 
