@@ -74,7 +74,7 @@ export async function getUserPublicKey(
  * Send transaction using Tether WDK SDK
  * 
  * This is the main transaction method - uses Tether WDK SDK as required.
- * Based on working examples in solana-wallet-integration/src/app.ts
+ * Based on working examples in Testing-wdk-wallet-solana/example-basic.js
  */
 export async function sendTransactionWithWDK(
   walletManager: WalletManagerSolana,
@@ -85,13 +85,21 @@ export async function sendTransactionWithWDK(
   const account = await getUserAccount(walletManager, accountIndex);
   
   // Use Tether WDK SDK's sendTransaction method
-  // Based on working example: account.sendTransaction({ recipient, value, commitment })
-  const signature = await (account as any).sendTransaction({
-    recipient,
+  // Based on working example: account.sendTransaction({ to: address, value })
+  // The SDK expects 'to' parameter, not 'recipient'
+  const result = await account.sendTransaction({
+    to: recipient,
     value: amountLamports,
-    commitment: 'confirmed',
   });
 
-  return signature;
+  // Handle both string and object return types
+  // Some versions return string directly, others return object with signature property
+  if (typeof result === 'string') {
+    return result;
+  } else if (result && typeof result === 'object' && 'signature' in result) {
+    return (result as any).signature;
+  } else {
+    throw new Error('Unexpected return type from sendTransaction');
+  }
 }
 
