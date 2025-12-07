@@ -36,8 +36,8 @@ Add these in Railway dashboard → Variables:
 
 ```bash
 # MetaMask Embedded Wallets (Required)
-NEXT_PUBLIC_METAMASK_CLIENT_ID=your_client_id
-METAMASK_SECRET_KEY=your_secret_key
+NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID=your_client_id
+EMBEDDED_WALLET_SECRET_KEY=your_secret_key
 
 # Solana (Required)
 NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com

@@ -9,9 +9,10 @@
    - `NEXT_PUBLIC_SOLANA_NETWORK` = `devnet`
 
 2. **MetaMask Embedded Wallets** (Required for user authentication)
-   - `NEXT_PUBLIC_METAMASK_CLIENT_ID` = Your MetaMask client ID
-   - `METAMASK_SECRET_KEY` = Your MetaMask secret key
+   - `NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID` = Your MetaMask Embedded Wallet client ID
+   - `EMBEDDED_WALLET_SECRET_KEY` = Your MetaMask Embedded Wallet secret key
    - Get these from: https://portal.metamask.io
+   - Note: The `NEXT_PUBLIC_` prefix is needed for Next.js client-side access
 
 ### Optional (Set after feemaster setup):
 
@@ -79,7 +80,7 @@ Once the build succeeds:
 3. **NEXT_PUBLIC_ Prefix**
    - Variables starting with `NEXT_PUBLIC_` are exposed to the browser
    - Only use this prefix for variables that are safe to expose
-   - `METAMASK_SECRET_KEY` should NOT have this prefix (server-only)
+   - `EMBEDDED_WALLET_SECRET_KEY` should NOT have this prefix (server-only)
 
 4. **Build Time vs Runtime**
    - All variables are available at build time
