@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { TransactionMetrics as Metrics, Status } from '@/lib/types';
-import { calculateStatus } from '@/lib/status';
 import StatusAlert from '@/components/StatusAlert';
 import TransactionMetrics from '@/components/TransactionMetrics';
 
@@ -39,8 +38,8 @@ export default function DashboardPage() {
       
       if (data.success) {
         setMetrics(data.metrics);
-        const statusType = calculateStatus(data.metrics);
-        setStatus(statusType);
+        // Use status from API (calculated server-side)
+        setStatus(data.status);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
