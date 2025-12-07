@@ -26,20 +26,6 @@ export default function FeemasterDashboard() {
     payRent: false,
   });
 
-  useEffect(() => {
-    const setupComplete = sessionStorage.getItem('feemaster_setup_complete');
-    const storedPublicKey = sessionStorage.getItem('feemaster_public_key');
-    
-    if (!setupComplete || !storedPublicKey) {
-      router.push('/feemaster');
-      return;
-    }
-
-    setPublicKey(storedPublicKey);
-    setOperationStatus(prev => ({ ...prev, setup: true }));
-    setLoading(false);
-  }, [router]);
-
   const handleCheckBalance = async () => {
     try {
       const response = await fetch('/api/feemaster/balance');
@@ -74,6 +60,24 @@ export default function FeemasterDashboard() {
     alert('Rent payment functionality coming soon');
     setOperationStatus(prev => ({ ...prev, payRent: true }));
   };
+
+  useEffect(() => {
+    const setupComplete = sessionStorage.getItem('feemaster_setup_complete');
+    const storedPublicKey = sessionStorage.getItem('feemaster_public_key');
+    
+    if (!setupComplete || !storedPublicKey) {
+      router.push('/feemaster');
+      return;
+    }
+
+    setPublicKey(storedPublicKey);
+    setOperationStatus(prev => ({ ...prev, setup: true }));
+    
+    // Automatically load balance for account index 0
+    handleCheckBalance();
+    
+    setLoading(false);
+  }, [router]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('feemaster_public_key');

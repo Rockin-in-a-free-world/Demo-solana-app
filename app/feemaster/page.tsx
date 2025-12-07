@@ -22,8 +22,9 @@ export default function FeemasterLogin() {
         throw new Error('Please confirm that you understand the requirements');
       }
 
-      // Setup feemaster account (creates account index 0 and stores in .env)
-      // If seedPhrase is empty, API will generate one
+      // Access feemaster account (account index 0 from seed phrase)
+      // If seedPhrase is empty, API will generate new seed phrase (setup mode)
+      // If seedPhrase provided, API will access existing wallet (login mode)
       const response = await fetch('/api/feemaster/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,8 +42,8 @@ export default function FeemasterLogin() {
       sessionStorage.setItem('feemaster_public_key', data.publicKey);
       sessionStorage.setItem('feemaster_setup_complete', 'true');
       
-      // If seed phrase was generated, show it to user
-      if (data.seedPhrase && !seedPhrase.trim()) {
+      // If seed phrase was generated (new setup), show it to user
+      if (data.isNewSetup && data.seedPhrase) {
         alert(`⚠️ IMPORTANT: Save this seed phrase securely!\n\n${data.seedPhrase}\n\nYou won't be able to recover your account without it!`);
       }
       
