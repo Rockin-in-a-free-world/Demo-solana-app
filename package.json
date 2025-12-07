@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "npm rebuild sodium-native || true"
   },
   "dependencies": {
     "@scure/bip39": "^1.6.0",
