@@ -5,35 +5,40 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Setup feemaster account - creates account index 0 and stores in .env
- * This is the FIRST operation - just account creation and storage
- * Uses Tether SDK to create the account
+ * Setup/Login feemaster account
  * 
- * Can either:
- * - Generate a new seed phrase (if seedPhrase not provided)
- * - Use provided seed phrase
+ * Two modes:
+ * 1. Setup (new): Generate new seed phrase → creates new wallet
+ * 2. Login (existing): Use provided seed phrase → accesses existing wallet (account index 0)
+ * 
+ * Uses Tether SDK to derive account index 0 from seed phrase
  */
 export async function POST(request: NextRequest) {
   try {
     let { seedPhrase } = await request.json();
 
-    // If no seed phrase provided, generate one
-    if (!seedPhrase) {
+    const isNewSetup = !seedPhrase || seedPhrase.trim() === '';
+    
+    // If no seed phrase provided, generate one (new setup)
+    if (isNewSetup) {
       seedPhrase = generateSeedPhrase();
     }
 
-    // Validate seed phrase
-    const words = seedPhrase.trim().split(/\s+/);
-    if (words.length !== 12 && words.length !== 24) {
+    // Access feemaster account using Tether SDK
+    // Tether SDK derives account index 0 from the seed phrase
+    // This will throw an error if seed phrase is invalid
+    let walletManager;
+    let publicKey;
+    try {
+      walletManager = createFeemasterAccount(seedPhrase);
+      publicKey = await getFeemasterPublicKey(walletManager);
+    } catch (error: any) {
+      // Tether SDK will throw error if seed phrase is invalid
       return NextResponse.json(
-        { error: 'Seed phrase must be 12 or 24 words' },
+        { error: `Invalid seed phrase: ${error.message || 'Seed phrase validation failed. Please check your seed phrase and try again.'}` },
         { status: 400 }
       );
     }
-
-    // Create feemaster account using Tether SDK
-    const walletManager = createFeemasterAccount(seedPhrase);
-    const publicKey = await getFeemasterPublicKey(walletManager);
 
     // Store credentials
     // On Railway: Use Railway environment variables (set via dashboard or API)
@@ -46,9 +51,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         publicKey,
-        seedPhrase, // User should add this to Railway secrets
-        message: 'Feemaster account created. Add FEEMASTER_SEED_PHRASE and FEEMASTER_PUBLIC_KEY to Railway Variables.',
-        instructions: 'Go to Railway dashboard → Your Project → Variables → Add: FEEMASTER_SEED_PHRASE and FEEMASTER_PUBLIC_KEY',
+        seedPhrase: isNewSetup ? seedPhrase : undefined, // Only return if newly generated
+        isNewSetup,
+        message: isNewSetup 
+          ? 'New feemaster account created. Add FEEMASTER_SEED_PHRASE and FEEMASTER_PUBLIC_KEY to Railway Variables.'
+          : 'Feemaster account accessed successfully.',
+        instructions: isNewSetup 
+          ? 'Go to Railway dashboard → Your Project → Variables → Add: FEEMASTER_SEED_PHRASE and FEEMASTER_PUBLIC_KEY'
+          : undefined,
         railway: true,
       });
     } else {
@@ -93,8 +103,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         publicKey,
-        seedPhrase, // Return seed phrase if it was generated
-        message: 'Feemaster account created and stored in .env.local',
+        seedPhrase: isNewSetup ? seedPhrase : undefined, // Only return if newly generated
+        isNewSetup,
+        message: isNewSetup 
+          ? 'New feemaster account created and stored in .env.local'
+          : 'Feemaster account accessed successfully.',
       });
     }
   } catch (error: any) {

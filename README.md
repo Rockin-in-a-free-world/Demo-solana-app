@@ -1,6 +1,6 @@
 # Solana Wallet Demo App
 
-Railway has access to [this repo](https://github.com/Rockin-in-a-free-world/Demo-solana-app.git)
+Railway has access to [this repo](https://github.com/Rockin-in-a-free-world/Demo-solana-app.git) and is serving it from this [public endpoint](https://demo-solana-app-production.up.railway.app/).
 
 A Next.js application demonstrating Tether WDK Solana SDK with transaction monitoring, multisig wallet creation via Google sign-on, and dashboard metrics.
 
