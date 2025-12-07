@@ -100,7 +100,7 @@ export default function FeemasterLogin() {
                 className="mt-1"
               />
               <span className="text-sm text-gray-700">
-                I understand that by logging in with my gmail, I will create a new Solana wallet and must store the seed phrase.
+                I understand that by logging in without a seed, I will create a new Solana wallet and must store the seed phrase.
               </span>
             </label>
           </div>

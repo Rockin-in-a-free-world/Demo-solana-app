@@ -52,6 +52,14 @@ export default function FeemasterDashboard() {
   }, []);
 
   const handleViewPrivateKey = async () => {
+    // Toggle: if already showing, hide it
+    if (showPrivateKey) {
+      setShowPrivateKey(false);
+      setPrivateKey('');
+      return;
+    }
+    
+    // Otherwise, fetch and show private key
     try {
       // Get seed phrase from sessionStorage (temporary) or it will use env vars
       const tempSeedPhrase = sessionStorage.getItem('feemaster_seed_phrase_temp');
@@ -81,6 +89,30 @@ export default function FeemasterDashboard() {
     // TODO: Implement rent payment
     alert('Rent payment functionality coming soon');
     setOperationStatus(prev => ({ ...prev, payRent: true }));
+  };
+
+  const handleRequestAirdrop = async () => {
+    try {
+      const response = await fetch('/api/feemaster/airdrop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicKey, amount: 2 }), // Request 2 SOL
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to request airdrop');
+      }
+      
+      const data = await response.json();
+      alert(`✅ Airdrop successful! ${data.balanceSOL} SOL received.\n\nSignature: ${data.signature}`);
+      
+      // Refresh balance
+      handleCheckBalance();
+    } catch (error: any) {
+      console.error('Error requesting airdrop:', error);
+      alert(error.message || 'Failed to request airdrop. You may need to use the web faucet at https://faucet.solana.com');
+    }
   };
 
   useEffect(() => {
@@ -157,14 +189,6 @@ export default function FeemasterDashboard() {
                     Copy
                   </button>
                 </div>
-                <a
-                  href={`https://faucet.solana.com?address=${publicKey}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-block px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
-                >
-                  💧 Get Devnet SOL
-                </a>
               </div>
               <div>
                 <span className="font-medium">Balance:</span>{' '}
@@ -205,12 +229,14 @@ export default function FeemasterDashboard() {
               <button
                 onClick={handleViewPrivateKey}
                 className={`w-full px-4 py-2 rounded-lg text-center ${
-                  operationStatus.viewPrivateKey
+                  showPrivateKey
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : operationStatus.viewPrivateKey
                     ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-gray-400 text-white hover:bg-gray-500'
                 }`}
               >
-                {operationStatus.viewPrivateKey ? '✓ View Private Key' : 'View Private Key'}
+                {showPrivateKey ? 'Hide Private Key' : operationStatus.viewPrivateKey ? '✓ View Private Key' : 'View Private Key'}
               </button>
               <button
                 onClick={handlePayRent}
@@ -222,6 +248,15 @@ export default function FeemasterDashboard() {
               >
                 {operationStatus.payRent ? '✓ Pay Rent' : 'Pay Rent'}
               </button>
+              <button
+                onClick={handleRequestAirdrop}
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-center"
+              >
+                💧 Get Devnet SOL (2 SOL)
+              </button>
+              <p className="text-xs text-gray-500 text-center mt-1">
+                Or use <a href={`https://faucet.solana.com?address=${publicKey}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">web faucet</a> (requires GitHub auth)
+              </p>
               <a
                 href={`https://explorer.solana.com/address/${publicKey}?cluster=devnet`}
                 target="_blank"
