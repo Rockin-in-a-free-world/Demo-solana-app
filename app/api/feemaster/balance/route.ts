@@ -5,14 +5,22 @@ import { createFeemasterAccount, getFeemasterBalance } from '@/lib/feemaster';
  * Get feemaster account balance using Tether SDK
  * This is a SECONDARY operation (button on dashboard)
  * 
- * Reads seed phrase from environment variables (Railway secrets or .env.local)
+ * Reads seed phrase from:
+ * 1. Request body (temporary session storage - for immediate use after setup)
+ * 2. Environment variables (Railway secrets or .env.local - for persistence)
  */
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Get seed phrase from environment variables
-    // Railway: Automatically injected as process.env.FEEMASTER_SEED_PHRASE
-    // Local: From .env.local (loaded by Next.js)
-    const seedPhrase = process.env.FEEMASTER_SEED_PHRASE;
+    // Try to get seed phrase from request body first (temporary session storage)
+    let body: { seedPhrase?: string } = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // Request body might be empty, continue to env vars
+    }
+    
+    // Get seed phrase from request body (temporary) or environment variables (persistent)
+    const seedPhrase = body.seedPhrase || process.env.FEEMASTER_SEED_PHRASE;
     
     if (!seedPhrase) {
       return NextResponse.json(

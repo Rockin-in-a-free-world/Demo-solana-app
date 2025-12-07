@@ -42,9 +42,19 @@ export default function FeemasterLogin() {
       sessionStorage.setItem('feemaster_public_key', data.publicKey);
       sessionStorage.setItem('feemaster_setup_complete', 'true');
       
+      // Store seed phrase temporarily in sessionStorage for dashboard operations
+      // This allows dashboard to work immediately before Railway env vars are set
+      // User should still add to Railway Variables for persistence
+      if (data.seedPhrase) {
+        sessionStorage.setItem('feemaster_seed_phrase_temp', data.seedPhrase);
+      } else if (seedPhrase.trim()) {
+        // If user provided seed phrase, store it temporarily
+        sessionStorage.setItem('feemaster_seed_phrase_temp', seedPhrase.trim());
+      }
+      
       // If seed phrase was generated (new setup), show it to user
       if (data.isNewSetup && data.seedPhrase) {
-        alert(`⚠️ IMPORTANT: Save this seed phrase securely!\n\n${data.seedPhrase}\n\nYou won't be able to recover your account without it!`);
+        alert(`⚠️ IMPORTANT: Save this seed phrase securely!\n\n${data.seedPhrase}\n\nYou won't be able to recover your account without it!\n\nAlso add it to Railway Variables for persistence.`);
       }
       
       // Redirect to dashboard

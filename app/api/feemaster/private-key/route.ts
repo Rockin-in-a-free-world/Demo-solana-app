@@ -6,11 +6,22 @@ import bs58 from 'bs58';
  * Get feemaster private key (for funding account)
  * This is a SECONDARY operation (button on dashboard)
  * 
- * Derives private key from seed phrase stored in environment variables
+ * Derives private key from seed phrase:
+ * 1. Request body (temporary session storage - for immediate use after setup)
+ * 2. Environment variables (Railway secrets or .env.local - for persistence)
  */
-export async function GET() {
+export async function POST(request: NextRequest) {
   try {
-    const seedPhrase = process.env.FEEMASTER_SEED_PHRASE;
+    // Try to get seed phrase from request body first (temporary session storage)
+    let body: { seedPhrase?: string } = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // Request body might be empty, continue to env vars
+    }
+    
+    // Get seed phrase from request body (temporary) or environment variables (persistent)
+    const seedPhrase = body.seedPhrase || process.env.FEEMASTER_SEED_PHRASE;
     
     if (!seedPhrase) {
       return NextResponse.json(
