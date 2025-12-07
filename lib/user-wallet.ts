@@ -6,15 +6,16 @@
  * - Same pattern as feemaster: seed phrase → Tether WDK SDK → account index 0
  * 
  * This is the main purpose of the demo - to showcase Tether WDK SDK for transactions.
+ * 
+ * NOTE: We still use @solana/web3.js for read-only queries (transaction history, airdrops)
+ * but all wallet operations (balance, send) use Tether WDK SDK.
  */
 
 import WalletManagerSolana from '@tetherto/wdk-wallet-solana';
 import { SOLANA_RPC_URL } from './solana';
 
 /**
- * Create Tether WDK wallet manager from seed phrase (if available)
- * 
- * This is the preferred method if Web3Auth provides a seed phrase
+ * Create Tether WDK wallet manager from seed phrase
  */
 export function createUserWalletManagerFromSeed(seedPhrase: string): WalletManagerSolana {
   return new WalletManagerSolana(seedPhrase, {
@@ -35,6 +36,38 @@ export async function getUserAccount(
   accountIndex: number = 0
 ) {
   return await walletManager.getAccount(accountIndex);
+}
+
+/**
+ * Get user balance using Tether WDK SDK
+ * 
+ * @param walletManager - Tether WDK wallet manager
+ * @param accountIndex - Account index (default: 0)
+ * @returns Balance in lamports (bigint)
+ */
+export async function getUserBalance(
+  walletManager: WalletManagerSolana,
+  accountIndex: number = 0
+): Promise<bigint> {
+  const account = await getUserAccount(walletManager, accountIndex);
+  // Tether WDK SDK's getBalance() returns bigint in lamports
+  return await account.getBalance();
+}
+
+/**
+ * Get user public key (address) using Tether WDK SDK
+ * 
+ * @param walletManager - Tether WDK wallet manager
+ * @param accountIndex - Account index (default: 0)
+ * @returns Public key as string
+ */
+export async function getUserPublicKey(
+  walletManager: WalletManagerSolana,
+  accountIndex: number = 0
+): Promise<string> {
+  const account = await getUserAccount(walletManager, accountIndex);
+  // Tether WDK SDK's getAddress() returns Promise<string>
+  return await account.getAddress();
 }
 
 /**
