@@ -18,18 +18,12 @@ export async function POST(request: NextRequest) {
     let { seedPhrase } = await request.json();
 
     // If no seed phrase provided, generate one
-    if (!seedPhrase) {
+    if (!seedPhrase || seedPhrase.trim() === '') {
       seedPhrase = generateSeedPhrase();
     }
 
-    // Validate seed phrase
-    const words = seedPhrase.trim().split(/\s+/);
-    if (words.length !== 12 && words.length !== 24) {
-      return NextResponse.json(
-        { error: 'Seed phrase must be 12 or 24 words' },
-        { status: 400 }
-      );
-    }
+    // Remove validation - just use whatever is provided or generated
+    // If user provided a seed phrase, use it as-is (Tether SDK will validate if needed)
 
     // Create feemaster account using Tether SDK
     const walletManager = createFeemasterAccount(seedPhrase);
