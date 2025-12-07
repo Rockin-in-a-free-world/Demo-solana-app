@@ -56,7 +56,8 @@ export async function getTransactionStatuses(
     else if (status.confirmationStatus === 'confirmed') {
       state = 'confirmed';
     } 
-    // If status exists but no confirmation status, it's likely in mempool (broadcast)
+    // If status exists but no confirmation status, transaction is broadcasting
+    // (in mempool or being processed by validators but not yet confirmed)
     else {
       state = 'broadcast';
     }
