@@ -26,8 +26,19 @@ export async function POST(request: NextRequest) {
     // If user provided a seed phrase, use it as-is (Tether SDK will validate if needed)
 
     // Create feemaster account using Tether SDK
-    const walletManager = createFeemasterAccount(seedPhrase);
-    const publicKey = await getFeemasterPublicKey(walletManager);
+    // This will throw an error if seed phrase is invalid
+    let walletManager;
+    let publicKey;
+    try {
+      walletManager = createFeemasterAccount(seedPhrase);
+      publicKey = await getFeemasterPublicKey(walletManager);
+    } catch (error: any) {
+      // Tether SDK will throw error if seed phrase is invalid
+      return NextResponse.json(
+        { error: `Invalid seed phrase: ${error.message || 'Seed phrase validation failed. Please check your seed phrase and try again.'}` },
+        { status: 400 }
+      );
+    }
 
     // Store credentials
     // On Railway: Use Railway environment variables (set via dashboard or API)

@@ -15,8 +15,10 @@ export default function FeemasterLogin() {
     setLoading(true);
 
     try {
-      // Check confirmation checkbox
-      if (!confirmed) {
+      const isEmpty = !seedPhrase.trim();
+      
+      // Confirmation only required when generating new seed phrase (empty input)
+      if (isEmpty && !confirmed) {
         throw new Error('Please confirm that you understand the requirements');
       }
 
@@ -77,23 +79,25 @@ export default function FeemasterLogin() {
           )}
         </div>
 
-        <div className="mb-4">
-          <label className="flex items-start space-x-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={(e) => setConfirmed(e.target.checked)}
-              className="mt-1"
-            />
-            <span className="text-sm text-gray-700">
-              I understand that by logging in with my gmail, I will create a new Solana wallet and must store the seed phrase.
-            </span>
-          </label>
-        </div>
+        {!seedPhrase.trim() && (
+          <div className="mb-4">
+            <label className="flex items-start space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={confirmed}
+                onChange={(e) => setConfirmed(e.target.checked)}
+                className="mt-1"
+              />
+              <span className="text-sm text-gray-700">
+                I understand that by logging in with my gmail, I will create a new Solana wallet and must store the seed phrase.
+              </span>
+            </label>
+          </div>
+        )}
 
         <button
           onClick={handleLogin}
-          disabled={loading || !confirmed}
+          disabled={loading || (!seedPhrase.trim() && !confirmed)}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {loading ? 'Logging in...' : 'Gmail login'}
