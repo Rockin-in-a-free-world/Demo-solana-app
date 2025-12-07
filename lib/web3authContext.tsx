@@ -38,7 +38,10 @@ function getWeb3AuthClientId(): string {
   }
 
   // Validate and provide helpful error messages
-  if (!clientId || clientId.trim() === '') {
+  // IMPORTANT: Always throw error - don't use placeholder
+  // Next.js embeds NEXT_PUBLIC_* variables at build time, so if it's missing,
+  // we want to fail explicitly rather than silently with a placeholder
+  if (!clientId || clientId.trim() === '' || clientId === 'PLACEHOLDER_CLIENT_ID_FOR_BUILD') {
     const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY;
     const envSource = isRailway ? 'Railway Variables' : '.env file';
     
@@ -55,9 +58,10 @@ ${isRailway ? `
    - NEXT_PUBLIC_METAMASK_CLIENT_ID = your_web3auth_client_id
 3. Make sure it's set as a "Public" variable (not secret)
 4. Make sure it's in "Shared Variables" (checkmark beside it)
-5. Redeploy the service
+5. Redeploy the service (variables must be set BEFORE build)
 
 Note: Railway Variables are shared across all services in the project.
+IMPORTANT: Variables must be set BEFORE building. Next.js embeds NEXT_PUBLIC_ variables at build time.
 ` : `
 1. Create or update .env.local file in the-app directory
 2. Add ONE of these (both work):
@@ -73,18 +77,13 @@ Web3Auth will not work until this is configured.
 
     console.error(errorMessage);
     
-    // For build-time, use a placeholder to prevent build failure
-    // But log the error clearly
-    if (typeof window === 'undefined') {
-      console.warn('⚠️ Build-time: Using placeholder clientId. This will fail at runtime if not set.');
-      return 'PLACEHOLDER_CLIENT_ID_FOR_BUILD';
-    }
-    
-    // At runtime, throw error to make it clear
+    // Always throw error - don't use placeholder
+    // This ensures the error is caught and displayed to the user
     throw new Error(
       `Web3Auth Client ID is required but not set in ${envSource}. ` +
       `Please configure NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID or NEXT_PUBLIC_METAMASK_CLIENT_ID ` +
       `in Railway Variables (make sure it's in Shared Variables with a checkmark) or .env.local file. ` +
+      `IMPORTANT: On Railway, variables must be set BEFORE building. ` +
       `Get your Client ID from: https://dashboard.web3auth.io`
     );
   }
