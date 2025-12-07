@@ -28,30 +28,52 @@ export default function FeemasterDashboard() {
 
   const handleCheckBalance = useCallback(async () => {
     try {
-      const response = await fetch('/api/feemaster/balance');
-      if (!response.ok) throw new Error('Failed to get balance');
+      // Get seed phrase from sessionStorage (temporary) or it will use env vars
+      const tempSeedPhrase = sessionStorage.getItem('feemaster_seed_phrase_temp');
+      
+      const response = await fetch('/api/feemaster/balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seedPhrase: tempSeedPhrase || undefined }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get balance');
+      }
       
       const data = await response.json();
       setBalance(data.balanceSOL);
       setOperationStatus(prev => ({ ...prev, checkBalance: true }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking balance:', error);
-      alert('Failed to check balance');
+      alert(error.message || 'Failed to check balance');
     }
   }, []);
 
   const handleViewPrivateKey = async () => {
     try {
-      const response = await fetch('/api/feemaster/private-key');
-      if (!response.ok) throw new Error('Failed to get private key');
+      // Get seed phrase from sessionStorage (temporary) or it will use env vars
+      const tempSeedPhrase = sessionStorage.getItem('feemaster_seed_phrase_temp');
+      
+      const response = await fetch('/api/feemaster/private-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seedPhrase: tempSeedPhrase || undefined }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get private key');
+      }
       
       const data = await response.json();
       setPrivateKey(data.privateKey);
       setShowPrivateKey(true);
       setOperationStatus(prev => ({ ...prev, viewPrivateKey: true }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting private key:', error);
-      alert('Failed to get private key');
+      alert(error.message || 'Failed to get private key');
     }
   };
 
@@ -112,16 +134,44 @@ export default function FeemasterDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Account Info</h2>
-            <div className="space-y-2">
-              <p>
-                <span className="font-medium">Public Key:</span>
-                <br />
-                <span className="text-sm font-mono break-all">{publicKey}</span>
-              </p>
-              <p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Wallet Address (Public Key)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={publicKey}
+                    readOnly
+                    className="flex-1 p-2 text-sm font-mono bg-gray-50 border rounded-lg break-all"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(publicKey);
+                      alert('Address copied to clipboard!');
+                    }}
+                    className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <a
+                  href={`https://faucet.solana.com?address=${publicKey}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
+                >
+                  💧 Get Devnet SOL
+                </a>
+              </div>
+              <div>
                 <span className="font-medium">Balance:</span>{' '}
-                {balance !== '0' ? `${balance} SOL` : 'Click "Check Balance" to load'}
-              </p>
+                <span className="text-lg font-bold">
+                  {balance !== '0' ? `${balance} SOL` : 'Click "Check Balance" to load'}
+                </span>
+              </div>
               {showPrivateKey && privateKey && (
                 <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
                   <p className="text-sm font-medium text-yellow-800 mb-2">Private Key:</p>
