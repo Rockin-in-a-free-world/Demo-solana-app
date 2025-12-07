@@ -40,47 +40,34 @@ export async function initializeEmbeddedWallet() {
     // Option 1: Try @metamask/sdk (main SDK package)
     const metamaskSDK = await import('@metamask/sdk');
     
-    // Check if embedded wallets functionality exists
-    if (metamaskSDK.initializeEmbeddedWallet) {
-      return await metamaskSDK.initializeEmbeddedWallet({
+    // Check if embedded wallets functionality exists (use type assertion to avoid TS errors)
+    const sdkAny = metamaskSDK as any;
+    if (sdkAny.initializeEmbeddedWallet && typeof sdkAny.initializeEmbeddedWallet === 'function') {
+      return await sdkAny.initializeEmbeddedWallet({
         clientId,
         // Other options may be needed based on SDK version
       });
     }
     
     // If SDK exists but doesn't have embedded wallets, try alternative
-    if (metamaskSDK.default) {
+    if (sdkAny.default) {
       // May need to use default export differently
       console.warn('MetaMask SDK found but embedded wallets API may differ');
     }
   } catch (error: any) {
-    if (!error.message?.includes('Cannot find module')) {
+    if (!error.message?.includes('Cannot find module') && !error.message?.includes('Cannot resolve')) {
       console.error('MetaMask SDK import error:', error);
     }
   }
 
-  // Option 2: Try separate embedded-wallets package (if it exists)
-  try {
-    const { initializeEmbeddedWallet } = await import('@metamask/embedded-wallets');
-    return await initializeEmbeddedWallet({
-      clientId,
-    });
-  } catch (error: any) {
-    if (!error.message?.includes('Cannot find module')) {
-      console.error('MetaMask Embedded Wallets import error:', error);
-    }
-  }
-
-  // If we get here, SDK is not installed or API is different
+  // If we get here, @metamask/sdk doesn't have embedded wallets API
+  // This is expected - the embedded wallets functionality may be in a different package
+  // or may need to be accessed differently. Check MetaMask documentation for the latest API.
   throw new Error(
-    'MetaMask Embedded Wallets SDK not found. ' +
-    'Please install: npm install @metamask/sdk\n\n' +
-    'Or check MetaMask documentation for the correct package: ' +
-    'https://docs.metamask.io/embedded-wallets/\n\n' +
-    'Once installed, the SDK should provide:\n' +
-    '- initializeEmbeddedWallet() or similar\n' +
-    '- authenticate({ provider: "google" })\n' +
-    '- getAccountSolana() method'
+    'MetaMask Embedded Wallets SDK not found in @metamask/sdk. ' +
+    'The embedded wallets functionality may be in a separate package or accessed differently. ' +
+    'Please check MetaMask documentation: https://docs.metamask.io/embedded-wallets/\n\n' +
+    'If embedded wallets is in a different package, you may need to install it separately.'
   );
 }
 
@@ -150,7 +137,7 @@ export async function authenticateWithGoogle(): Promise<{
           ? privateKeyString.slice(2) 
           : privateKeyString;
         privateKeyBytes = new Uint8Array(
-          hexString.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
+          hexString.match(/.{1,2}/g)?.map((byte: string) => parseInt(byte, 16)) || []
         );
       } catch {
         // If both fail, try as Uint8Array directly
