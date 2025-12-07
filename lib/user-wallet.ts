@@ -75,6 +75,9 @@ export async function getUserPublicKey(
  * 
  * This is the main transaction method - uses Tether WDK SDK as required.
  * Based on working examples in Testing-wdk-wallet-solana/example-basic.js
+ * 
+ * The SDK returns an object with signature and fee properties:
+ * { signature: string, fee: bigint }
  */
 export async function sendTransactionWithWDK(
   walletManager: WalletManagerSolana,
@@ -92,14 +95,27 @@ export async function sendTransactionWithWDK(
     value: amountLamports,
   });
 
-  // Handle both string and object return types
-  // Some versions return string directly, others return object with signature property
+  // Tether WDK SDK returns TransactionResult object
+  // Based on working examples, it has 'signature' property at runtime
+  // TypeScript types may show 'hash' but runtime uses 'signature'
+  const resultAny = result as any;
+  
+  // Check for signature property (runtime property name)
+  if (resultAny && typeof resultAny === 'object') {
+    if ('signature' in resultAny && typeof resultAny.signature === 'string') {
+      return resultAny.signature;
+    }
+    // Fallback: check for hash property (TypeScript type name)
+    if ('hash' in resultAny && typeof resultAny.hash === 'string') {
+      return resultAny.hash;
+    }
+  }
+  
+  // Fallback: if result is already a string
   if (typeof result === 'string') {
     return result;
-  } else if (result && typeof result === 'object' && 'signature' in result) {
-    return (result as any).signature;
-  } else {
-    throw new Error('Unexpected return type from sendTransaction');
   }
+  
+  throw new Error(`Unexpected return type from sendTransaction: ${typeof result}. Result: ${JSON.stringify(result)}`);
 }
 
