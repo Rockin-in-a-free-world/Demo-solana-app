@@ -11,7 +11,7 @@
 2. **MetaMask Embedded Wallets** (Required for user authentication)
    - `NEXT_PUBLIC_EMBEDDED_WALLET_CLIENT_ID` = Your MetaMask Embedded Wallet client ID
    - `EMBEDDED_WALLET_SECRET_KEY` = Your MetaMask Embedded Wallet secret key
-   - Get these from: https://portal.metamask.io
+   - Get these from: https://docs.metamask.io/embedded-wallets/dashboard/
    - Note: The `NEXT_PUBLIC_` prefix is needed for Next.js client-side access
 
 ### Optional (Set after feemaster setup):
